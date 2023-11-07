@@ -42,7 +42,7 @@ db.run(
 );
 
 db.run(
-    'CREATE TABLE IF NOT EXISTS TB_PRODUTOS (id INTEGER PRIMARY KEY AUTOINCREMENT, descricao TEXT, preco_unitario REAL)',
+    'CREATE TABLE IF NOT EXISTS TB_PRODUTOS (id INTEGER PRIMARY KEY AUTOINCREMENT, descricao TEXT, preco_unitario FLOAT)',
     (err) => {
         if (err) {
             console.error('Erro ao criar tabela TB_PRODUTOS:', err.message);
@@ -53,7 +53,7 @@ db.run(
 );
 
 db.run(
-    'CREATE TABLE IF NOT EXISTS TB_NOTAS_FISCAIS (id INTEGER PRIMARY KEY AUTOINCREMENT, valor REAL, cliente_id INT, vendedor_id INT, FOREIGN KEY(cliente_id) REFERENCES TB_CLIENTES(id), FOREIGN KEY(vendedor_id) REFERENCES TB_VENDEDORES(id))',
+    'CREATE TABLE IF NOT EXISTS TB_NOTAS_FISCAIS (id INTEGER PRIMARY KEY AUTOINCREMENT, valor FLOAT, cliente_id INT, vendedor_id INT, FOREIGN KEY(cliente_id) REFERENCES TB_CLIENTES(id), FOREIGN KEY(vendedor_id) REFERENCES TB_VENDEDORES(id))',
     (err) => {
         if (err) {
             console.error('Erro ao criar tabela TB_NOTAS_FISCAIS:', err.message);
@@ -76,7 +76,7 @@ db.run(
 
 
 
-
+//---------------------------------------------------------------------------------------------------------------------------------
 
 
 
@@ -144,8 +144,7 @@ app.post('/itensNotaFiscal', (req, res) => {
 
 
 
-
-
+//---------------------------------------------------------------------------------------------------------------------------------
 
 
 // Obter todos os clientes
@@ -158,6 +157,7 @@ app.get('/clientes', (req, res) => {
         res.json({ clientes: rows });
     });
 });
+
 
 //Obter todos os vendedores
 app.get('/vendedores', (req, res) => {
@@ -203,10 +203,16 @@ app.get('/notasFiscais', (req, res) => {
     });
 });
 
-// Obter um aluno por ID
-app.get('/clientes/:COD_CLI', (req, res) => {
+
+
+//---------------------------------------------------------------------------------------------------------------------------------
+
+
+
+// Obter um cliente por ID
+app.get('/clientes/:id', (req, res) => {
     const { id } = req.params;
-    db.get('SELECT * FROM TB_CLIENTES WHERE COD_CLI = ?', [COD_CLI], (err, row) => {
+    db.get('SELECT * FROM TB_CLIENTES WHERE id = ?', [id], (err, row) => {
         if (err) {
             res.status(500).json({ error: err.message });
             return;
@@ -219,11 +225,82 @@ app.get('/clientes/:COD_CLI', (req, res) => {
     });
 });
 
-// Atualizar um aluno por ID
-app.put('/clientes/:COD_CLI', (req, res) => {
-    const { COD_CLI } = req.params;
-    const { NOME_CLI, END_CLI } = req.body;
-    db.run('UPDATE TB_CLIENTES SET NOME_CLI = ?, END_CLI = ? WHERE COD_CLI = ?', [NOME_CLI, END_CLI, COD_CLI], (err) => {
+// Obter um produto por ID
+app.get('/produtos/:id', (req, res) => {
+    const { id } = req.params;
+    db.get('SELECT * FROM TB_PRODUTOS WHERE id = ?', [id], (err, row) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        if (!row) {
+            res.status(404).json({ message: 'Produto não encontrado' });
+            return;
+        }
+        res.json({ cliente: row });
+    });
+});
+
+// Obter um vendedor por ID
+app.get('/vendedores/:id', (req, res) => {
+    const { id } = req.params;
+    db.get('SELECT * FROM TB_VENDEDORES WHERE id = ?', [id], (err, row) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        if (!row) {
+            res.status(404).json({ message: 'Vendedor não encontrado' });
+            return;
+        }
+        res.json({ cliente: row });
+    });
+});
+
+
+// Obter uma nota fiscal por ID
+app.get('/notasFiscais/:id', (req, res) => {
+    const { id } = req.params;
+    db.get('SELECT * FROM TB_NOTAS_FISCAIS WHERE id = ?', [id], (err, row) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        if (!row) {
+            res.status(404).json({ message: 'Nota Fiscal não encontrada' });
+            return;
+        }
+        res.json({ cliente: row });
+    });
+});
+
+// Obter uma item de nota fiscal por ID
+app.get('/itensNotaFiscal/:id', (req, res) => {
+    const { id } = req.params;
+    db.get('SELECT * FROM TB_ITENS_NOTAS_FISCAIS WHERE id = ?', [id], (err, row) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        if (!row) {
+            res.status(404).json({ message: 'Item de Nota Fiscal não encontrado' });
+            return;
+        }
+        res.json({ cliente: row });
+    });
+});
+
+
+
+//---------------------------------------------------------------------------------------------------------------------------------
+
+
+
+// Atualizar um cliente por ID
+app.put('/clientes/:id', (req, res) => {
+    const { id } = req.params;
+    const { nome } = req.body;
+    db.run('UPDATE TB_CLIENTES SET nome = ? WHERE id = ?', [nome, id], (err) => {
         if (err) {
             res.status(500).json({ error: err.message });
             return;
@@ -232,10 +309,67 @@ app.put('/clientes/:COD_CLI', (req, res) => {
     });
 });
 
-// Excluir um aluno por ID
-app.delete('/clientes/:COD_CLI', (req, res) => {
+// Atualizar um vendedor por ID
+app.put('/vendedores/:id', (req, res) => {
     const { id } = req.params;
-    db.run('DELETE FROM TB_CLIENTES WHERE COD_CLI = ?', [COD_CLI], (err) => {
+    const { nome } = req.body;
+    db.run('UPDATE TB_VENDEDORES SET nome = ? WHERE id = ?', [nome, id], (err) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json({ message: 'Vendedor atualizado com sucesso' });
+    });
+});
+
+// Atualizar um produto por ID
+app.put('/produtos/:id', (req, res) => {
+    const { id } = req.params;
+    const { descricao, preco_unitario } = req.body;
+    db.run('UPDATE TB_PRODUTOS SET descricao = ?, preco_unitario = ? WHERE id = ?', [descricao, preco_unitario, id], (err) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json({ message: 'Produto atualizado com sucesso' });
+    });
+});
+
+// Atualizar uma Nota Fiscal por ID
+app.put('/notasFiscais/:id', (req, res) => {
+    const { id } = req.params;
+    const { valor, cliente_id, vendedor_id } = req.body;
+    db.run('UPDATE TB_NOTAS_FISCAIS SET valor = ?, cliente_id = ?, vendedor_id = ? WHERE id = ?', [valor, cliente_id, vendedor_id, id], (err) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json({ message: 'Nota Fiscal atualizada com sucesso' });
+    });
+});
+
+// Atualizar um item de nota fiscal por ID
+app.put('/itensNotaFiscal/:id', (req, res) => {
+    const { id } = req.params;
+    const { notafiscal_id, quantidade, produto_id, unidade } = req.body;
+    db.run('UPDATE TB_ITENS_NOTAS_FISCAIS SET notafiscal_id = ?, quantidade = ?, produto_id = ?, unidade = ?,  WHERE id = ?', [notafiscal_id, quantidade, notafiscal_id, unidade, id], (err) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json({ message: 'Item de Nota Fiscal atualizada com sucesso' });
+    });
+});
+
+
+
+//--------------------------------------------------------------------------------------------------------------
+
+
+// Excluir um cliente por ID
+app.delete('/clientes/:id', (req, res) => {
+    const { id } = req.params;
+    db.run('DELETE FROM TB_CLIENTES WHERE id = ?', [id], (err) => {
         if (err) {
             res.status(500).json({ error: err.message });
             return;
@@ -244,8 +378,57 @@ app.delete('/clientes/:COD_CLI', (req, res) => {
     });
 });
 
+// Excluir um vendedor por ID
+app.delete('/vendedores/:id', (req, res) => {
+    const { id } = req.params;
+    db.run('DELETE FROM TB_VENDEDORES WHERE id = ?', [id], (err) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json({ message: 'Vendedor excluído com sucesso' });
+    });
+});
+
+// Excluir um produto por ID
+app.delete('/produtos/:id', (req, res) => {
+    const { id } = req.params;
+    db.run('DELETE FROM TB_PRODUTOS WHERE id = ?', [id], (err) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json({ message: 'Produto excluído com sucesso' });
+    });
+});
+
+// Excluir uma nota fiscal por ID
+app.delete('/notasFiscais/:id', (req, res) => {
+    const { id } = req.params;
+    db.run('DELETE FROM TB_NOTAS_FISCAIS WHERE id = ?', [id], (err) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json({ message: 'Nota Fiscal excluída com sucesso' });
+    });
+});
+
+// Excluir um item de nota fiscal por ID
+app.delete('/itensNotaFiscal/:id', (req, res) => {
+    const { id } = req.params;
+    db.run('DELETE FROM TB_ITENS_NOTAS_FISCAIS WHERE id = ?', [id], (err) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json({ message: 'Item de Nota Fiscal excluído com sucesso' });
+    });
+});
+
+//----------------------------------------------------------------------------------------------------------------
+
 // Inicie o servidor
 app.listen(port, () => {
     console.log(`Servidor está ouvindo na porta ${port}`);
 });
-
