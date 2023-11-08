@@ -18,7 +18,7 @@ const db = new sqlite3.Database('SCA.db', (err) => {
     }
 });
 
-// Crie a tabela TB_ALUNOS, se ainda não existir
+
 db.run(
     'CREATE TABLE IF NOT EXISTS TB_CLIENTES (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT)',
     (err) => {
@@ -82,7 +82,7 @@ db.run(
 
 // Rotas para operações CRUD
 
-// Criar um aluno
+// Criar um cliente
 app.post('/clientes', (req, res) => {
     const { nome } = req.body;
     db.run('INSERT INTO TB_CLIENTES (nome) VALUES (?)', [nome], (err) => {
@@ -177,7 +177,7 @@ app.get('/itensNotaFiscal', (req, res) => {
             res.status(500).json({ error: err.message });
             return;
         }
-        res.json({ vendedores: rows });
+        res.json({ itensNotaFiscal: rows });
     });
 });
 
@@ -352,7 +352,7 @@ app.put('/notasFiscais/:id', (req, res) => {
 app.put('/itensNotaFiscal/:id', (req, res) => {
     const { id } = req.params;
     const { notafiscal_id, quantidade, produto_id, unidade } = req.body;
-    db.run('UPDATE TB_ITENS_NOTAS_FISCAIS SET notafiscal_id = ?, quantidade = ?, produto_id = ?, unidade = ?,  WHERE id = ?', [notafiscal_id, quantidade, notafiscal_id, unidade, id], (err) => {
+    db.run('UPDATE TB_ITENS_NOTAS_FISCAIS SET notafiscal_id = ?, quantidade = ?, produto_id = ?, unidade = ?  WHERE id = ?', [notafiscal_id, quantidade, notafiscal_id, unidade, id], (err) => {
         if (err) {
             res.status(500).json({ error: err.message });
             return;
